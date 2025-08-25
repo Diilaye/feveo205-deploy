@@ -17,8 +17,9 @@ const __dirnameResolved = path.resolve();
 
 app.use(express.static(path.join(__dirnameResolved, "dist")));
 
-// 🌐 Catch-all route pour une SPA
-app.get("/", (_, res) => {
+
+// 🌐 Catch-all route pour une SPA - gestionnaire pour toutes les autres routes
+app.get("/*", (req, res) => {
   res.sendFile(path.join(__dirnameResolved, "dist", "index.html"));
 });
 
