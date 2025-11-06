@@ -1,0 +1,21 @@
+# Robots.txt pour FEVEO 2050
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /coordinateur/
+
+# Sitemaps
+Sitemap: https://feveo2050.sn/sitemap.xml
+
+# Crawl-delay pour éviter la surcharge
+Crawl-delay: 1
+
+# Robots spécifiques
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Slurp
+Allow: /
