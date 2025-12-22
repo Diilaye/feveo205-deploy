@@ -1,0 +1,246 @@
+import { useState } from 'react';
+export const usePaiement = () => {
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const creerPaiement = async (options) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error('Token d\'authentification manquant');
+            }
+            const response = await fetch('https://api.feveo2025.sn/api/paiements', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    montant: options.montant,
+                    typePaiement: options.typePaiement,
+                    entiteId: options.entiteId,
+                    typeEntite: options.typeEntite,
+                    payeur: options.payeur,
+                    methodePaiement: options.methodePaiement || 'wave',
+                    metadonnees: options.metadonnees || {}
+                })
+            });
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data.paiement,
+                    urlPaiement: data.data.urlPaiement
+                };
+            }
+            else {
+                setError(data.message || 'Erreur lors de la création du paiement');
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            const errorMessage = err.message || 'Erreur de connexion au serveur';
+            setError(errorMessage);
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    const obtenirPaiement = async (paiementId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`https://api.feveo2025.sn/api/paiements/${paiementId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data.paiement
+                };
+            }
+            else {
+                setError(data.message);
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            setError(err.message || 'Erreur de connexion');
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    const obtenirPaiementParReference = async (reference) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const response = await fetch(`https://api.feveo2025.sn/api/paiements/reference/${reference}`);
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data.paiement
+                };
+            }
+            else {
+                setError(data.message);
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            setError(err.message || 'Erreur de connexion');
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    const verifierStatutPaiement = async (paiementId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`https://api.feveo2025.sn/api/paiements/${paiementId}/verifier-statut`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data.paiement
+                };
+            }
+            else {
+                setError(data.message);
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            setError(err.message || 'Erreur de connexion');
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    const annulerPaiement = async (paiementId) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const response = await fetch(`https://api.feveo2025.sn/api/paiements/${paiementId}/annuler`, {
+                method: 'PUT',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data.paiement
+                };
+            }
+            else {
+                setError(data.message);
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            setError(err.message || 'Erreur de connexion');
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    const listerPaiements = async (filtres) => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            const params = new URLSearchParams();
+            if (filtres?.page)
+                params.append('page', filtres.page.toString());
+            if (filtres?.limite)
+                params.append('limite', filtres.limite.toString());
+            if (filtres?.statut)
+                params.append('statut', filtres.statut);
+            if (filtres?.typePaiement)
+                params.append('typePaiement', filtres.typePaiement);
+            if (filtres?.dateDebut)
+                params.append('dateDebut', filtres.dateDebut);
+            if (filtres?.dateFin)
+                params.append('dateFin', filtres.dateFin);
+            const response = await fetch(`https://api.feveo2025.sn/api/paiements?${params}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            const data = await response.json();
+            if (data.success) {
+                return {
+                    success: true,
+                    data: data.data
+                };
+            }
+            else {
+                setError(data.message);
+                return {
+                    success: false
+                };
+            }
+        }
+        catch (err) {
+            setError(err.message || 'Erreur de connexion');
+            return {
+                success: false
+            };
+        }
+        finally {
+            setLoading(false);
+        }
+    };
+    return {
+        loading,
+        error,
+        creerPaiement,
+        obtenirPaiement,
+        obtenirPaiementParReference,
+        verifierStatutPaiement,
+        annulerPaiement,
+        listerPaiements
+    };
+};
+//# sourceMappingURL=usePaiement.js.map

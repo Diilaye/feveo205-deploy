@@ -1,0 +1,72 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { useState, useEffect } from 'react';
+import { Calendar, Clock, ArrowLeft, Tag, User, Eye, Share2, ChevronRight, TrendingUp } from 'lucide-react';
+import axios from 'axios';
+const Actualites = ({ onNavigate }) => {
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [selectedNews, setSelectedNews] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [newsItems, setNewsItems] = useState([]);
+    // Charger les articles depuis l'API
+    useEffect(() => {
+        const fetchArticles = async () => {
+            try {
+                const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3051';
+                const response = await axios.get(`${API_URL}/articles`);
+                const articles = response.data.articles || [];
+                // Filtrer uniquement les articles publiés
+                const publishedArticles = articles.filter((article) => article.statut === 'publie');
+                setNewsItems(publishedArticles);
+            }
+            catch (error) {
+                console.error('Erreur lors du chargement des articles:', error);
+            }
+            finally {
+                setIsLoading(false);
+            }
+        };
+        fetchArticles();
+    }, []);
+    const categories = [
+        { id: 'all', name: 'Toutes les actualités', icon: TrendingUp },
+        { id: 'annonce', name: 'Annonces', icon: Calendar },
+        { id: 'investissement', name: 'Investissement', icon: TrendingUp },
+        { id: 'gie', name: 'GIE', icon: User },
+        { id: 'partenariat', name: 'Partenariats', icon: Share2 },
+        { id: 'formation', name: 'Formation', icon: User },
+        { id: 'technologie', name: 'Technologie', icon: Tag },
+        { id: 'territoire', name: 'Territoire', icon: Tag },
+        { id: 'impact', name: 'Impact Social', icon: Tag },
+        { id: 'innovation', name: 'Innovation', icon: Tag },
+        { id: 'certification', name: 'Certification', icon: Tag },
+        { id: 'evenement', name: 'Événement', icon: Calendar },
+        { id: 'finance', name: 'Finance', icon: TrendingUp }
+    ];
+    const filteredNews = selectedCategory === 'all'
+        ? newsItems
+        : newsItems.filter(item => item.categorie === selectedCategory);
+    const featuredNews = newsItems.filter(item => item.vedette);
+    const formatDate = (dateString) => {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('fr-FR', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        });
+    };
+    const handleImageError = (e) => {
+        const target = e.currentTarget;
+        const originalSrc = target.src;
+        if (!originalSrc.includes('via.placeholder.com')) {
+            target.src = `https://via.placeholder.com/800x500/4F46E5/FFFFFF?text=${encodeURIComponent('FEVEO 2050')}`;
+        }
+    };
+    return (_jsxs("section", { id: "actualites", className: "min-h-screen bg-gradient-to-br from-neutral-50 to-neutral-100 py-20", children: [_jsxs("div", { className: "container-max section-padding", children: [_jsxs("div", { className: "text-center mb-12", children: [_jsxs("button", { onClick: () => onNavigate?.('accueil'), className: "inline-flex items-center gap-2 text-primary-600 hover:text-primary-700 transition-colors duration-200 mb-6", children: [_jsx(ArrowLeft, { className: "w-5 h-5" }), "Retour \u00E0 l'accueil"] }), _jsxs("h1", { className: "text-4xl md:text-5xl font-bold text-neutral-900 mb-4", children: ["Actualit\u00E9s ", _jsx("span", { className: "text-accent-500", children: "FEVEO 2050" })] }), _jsx("p", { className: "text-xl text-neutral-600 max-w-3xl mx-auto", children: "Suivez les derni\u00E8res nouvelles de l'\u00E9conomie organique, nos projets, \u00E9v\u00E9nements et l'impact de FEVEO sur le d\u00E9veloppement du S\u00E9n\u00E9gal." })] }), !isLoading && featuredNews.length > 0 && selectedCategory === 'all' && (_jsxs("div", { className: "mb-16", children: [_jsxs("h2", { className: "text-2xl font-bold text-neutral-900 mb-6 flex items-center gap-2", children: [_jsx(TrendingUp, { className: "w-6 h-6 text-accent-500" }), "\u00C0 la une"] }), _jsx("div", { className: "grid grid-cols-1 lg:grid-cols-2 gap-6", children: featuredNews.map((news) => (_jsxs("div", { className: "group relative bg-white rounded-2xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-300 cursor-pointer", onClick: () => setSelectedNews(news), children: [_jsxs("div", { className: "relative h-64 overflow-hidden", children: [_jsx("img", { src: news.image, alt: news.titre, className: "w-full h-full object-cover group-hover:scale-110 transition-transform duration-500", onError: handleImageError }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-neutral-900/80 via-neutral-900/40 to-transparent" }), _jsx("div", { className: "absolute top-4 left-4", children: _jsx("span", { className: "px-3 py-1 bg-accent-500 text-white text-xs font-semibold rounded-full", children: "\u00C0 la une" }) })] }), _jsxs("div", { className: "p-6", children: [_jsxs("div", { className: "flex items-center gap-4 text-sm text-neutral-500 mb-3", children: [_jsxs("span", { className: "flex items-center gap-1", children: [_jsx(Calendar, { className: "w-4 h-4" }), formatDate(news.datePublication)] }), _jsxs("span", { className: "flex items-center gap-1", children: [_jsx(Clock, { className: "w-4 h-4" }), news.tempsLecture] }), _jsxs("span", { className: "flex items-center gap-1", children: [_jsx(Eye, { className: "w-4 h-4" }), news.vues] })] }), _jsx("h3", { className: "text-xl font-bold text-neutral-900 mb-3 line-clamp-2 group-hover:text-accent-500 transition-colors", children: news.titre }), _jsx("p", { className: "text-neutral-600 line-clamp-3 mb-4", children: news.resume }), _jsxs("div", { className: "flex items-center justify-between", children: [_jsxs("div", { className: "flex items-center gap-2 text-sm text-neutral-500", children: [_jsx(User, { className: "w-4 h-4" }), news.auteur.prenom, " ", news.auteur.nom] }), _jsxs("button", { className: "flex items-center gap-2 text-accent-500 font-semibold group-hover:gap-3 transition-all", children: ["Lire la suite", _jsx(ChevronRight, { className: "w-4 h-4" })] })] })] })] }, news._id))) })] })), _jsx("div", { className: "flex flex-wrap justify-center gap-3 mb-12", children: categories.slice(0, 6).map((category) => {
+                            const IconComponent = category.icon;
+                            return (_jsxs("button", { onClick: () => setSelectedCategory(category.id), className: `flex items-center gap-2 px-6 py-3 rounded-full font-medium transition-all duration-200 ${selectedCategory === category.id
+                                    ? 'bg-accent-500 text-white shadow-lg scale-105'
+                                    : 'bg-white text-neutral-600 hover:bg-neutral-100 border border-neutral-200'}`, children: [_jsx(IconComponent, { className: "w-4 h-4" }), category.name] }, category.id));
+                        }) }), isLoading ? (_jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: Array.from({ length: 6 }).map((_, index) => (_jsxs("div", { className: "bg-white rounded-xl overflow-hidden shadow-lg animate-pulse", children: [_jsx("div", { className: "h-48 bg-neutral-200" }), _jsxs("div", { className: "p-6", children: [_jsx("div", { className: "h-4 bg-neutral-200 rounded mb-3" }), _jsx("div", { className: "h-6 bg-neutral-200 rounded mb-3" }), _jsx("div", { className: "h-4 bg-neutral-200 rounded mb-2" }), _jsx("div", { className: "h-4 bg-neutral-200 rounded mb-4" }), _jsx("div", { className: "h-8 bg-neutral-200 rounded" })] })] }, index))) })) : (_jsx("div", { className: "grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6", children: filteredNews.map((news) => (_jsxs("div", { className: "group bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 cursor-pointer", onClick: () => setSelectedNews(news), children: [_jsxs("div", { className: "relative h-48 overflow-hidden", children: [_jsx("img", { src: news.image, alt: news.titre, className: "w-full h-full object-cover group-hover:scale-110 transition-transform duration-500", onError: handleImageError }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-neutral-900/60 to-transparent" })] }), _jsxs("div", { className: "p-6", children: [_jsxs("div", { className: "flex items-center gap-3 text-xs text-neutral-500 mb-3", children: [_jsxs("span", { className: "flex items-center gap-1", children: [_jsx(Calendar, { className: "w-3 h-3" }), formatDate(news.datePublication)] }), _jsxs("span", { className: "flex items-center gap-1", children: [_jsx(Clock, { className: "w-3 h-3" }), news.tempsLecture] })] }), _jsx("h3", { className: "text-lg font-bold text-neutral-900 mb-3 line-clamp-2 group-hover:text-accent-500 transition-colors", children: news.titre }), _jsx("p", { className: "text-sm text-neutral-600 line-clamp-3 mb-4", children: news.resume }), _jsxs("div", { className: "flex items-center justify-between pt-4 border-t border-neutral-100", children: [_jsx("span", { className: "px-3 py-1 bg-accent-100 text-accent-700 text-xs rounded-full font-medium", children: categories.find(cat => cat.id === news.categorie)?.name || news.categorie }), _jsxs("span", { className: "flex items-center gap-1 text-xs text-neutral-400", children: [_jsx(Eye, { className: "w-3 h-3" }), news.vues] })] })] })] }, news._id))) })), !isLoading && filteredNews.length === 0 && (_jsxs("div", { className: "text-center py-20", children: [_jsx("div", { className: "text-neutral-400 mb-4", children: _jsx(Calendar, { className: "w-16 h-16 mx-auto" }) }), _jsx("h3", { className: "text-xl font-semibold text-neutral-600 mb-2", children: "Aucune actualit\u00E9 trouv\u00E9e" }), _jsx("p", { className: "text-neutral-500", children: "Essayez de s\u00E9lectionner une autre cat\u00E9gorie." })] }))] }), selectedNews && (_jsx("div", { className: "fixed inset-0 z-50 overflow-y-auto bg-neutral-900/90 backdrop-blur-sm", children: _jsx("div", { className: "min-h-screen px-4 py-8", children: _jsxs("div", { className: "relative max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl overflow-hidden", children: [_jsxs("div", { className: "relative h-96 overflow-hidden", children: [_jsx("img", { src: selectedNews.image, alt: selectedNews.titre, className: "w-full h-full object-cover", onError: handleImageError }), _jsx("div", { className: "absolute inset-0 bg-gradient-to-t from-neutral-900/80 to-transparent" }), _jsx("button", { onClick: () => setSelectedNews(null), className: "absolute top-4 right-4 w-10 h-10 bg-white/20 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-white/30 transition-all duration-200", children: _jsx(ArrowLeft, { className: "w-5 h-5" }) }), _jsx("div", { className: "absolute top-4 left-4", children: _jsx("span", { className: "px-4 py-2 bg-accent-500 text-white text-sm font-semibold rounded-full", children: categories.find(cat => cat.id === selectedNews.categorie)?.name }) })] }), _jsxs("div", { className: "p-8 md:p-12", children: [_jsx("h1", { className: "text-3xl md:text-4xl font-bold text-neutral-900 mb-6", children: selectedNews.titre }), _jsxs("div", { className: "flex flex-wrap items-center gap-6 text-sm text-neutral-500 mb-8 pb-8 border-b border-neutral-200", children: [_jsxs("span", { className: "flex items-center gap-2", children: [_jsx(User, { className: "w-4 h-4" }), selectedNews.auteur.prenom, " ", selectedNews.auteur.nom] }), _jsxs("span", { className: "flex items-center gap-2", children: [_jsx(Calendar, { className: "w-4 h-4" }), formatDate(selectedNews.datePublication)] }), _jsxs("span", { className: "flex items-center gap-2", children: [_jsx(Clock, { className: "w-4 h-4" }), selectedNews.tempsLecture] }), _jsxs("span", { className: "flex items-center gap-2", children: [_jsx(Eye, { className: "w-4 h-4" }), selectedNews.vues, " vues"] }), _jsxs("button", { className: "flex items-center gap-2 text-accent-500 hover:text-accent-600 transition-colors ml-auto", children: [_jsx(Share2, { className: "w-4 h-4" }), "Partager"] })] }), _jsxs("div", { className: "prose prose-lg max-w-none", children: [_jsx("p", { className: "text-xl text-neutral-700 font-medium mb-6 leading-relaxed", children: selectedNews.resume }), selectedNews.images && selectedNews.images.length > 1 && (_jsxs("div", { className: "my-8", children: [_jsx("h3", { className: "text-lg font-semibold text-neutral-900 mb-4", children: "Galerie d'images" }), _jsx("div", { className: "grid grid-cols-2 md:grid-cols-3 gap-4", children: selectedNews.images.map((img, index) => (_jsx("img", { src: img, alt: `Image ${index + 1}`, className: "w-full h-48 object-cover rounded-lg shadow-md hover:shadow-xl transition-shadow cursor-pointer", onError: handleImageError }, index))) })] })), selectedNews.video && (_jsxs("div", { className: "my-8", children: [_jsx("h3", { className: "text-lg font-semibold text-neutral-900 mb-4", children: "Vid\u00E9o" }), _jsx("video", { src: selectedNews.video, controls: true, className: "w-full rounded-lg shadow-lg", poster: selectedNews.image, children: "Votre navigateur ne supporte pas la lecture de vid\u00E9os." })] })), _jsx("div", { className: "text-neutral-600 leading-relaxed space-y-4", dangerouslySetInnerHTML: { __html: selectedNews.contenu } }), selectedNews.tags && selectedNews.tags.length > 0 && (_jsx("div", { className: "mt-8 flex flex-wrap gap-2", children: selectedNews.tags.map((tag, index) => (_jsxs("span", { className: "px-3 py-1 bg-neutral-100 text-neutral-600 rounded-full text-sm", children: ["#", tag] }, index))) }))] }), _jsx("div", { className: "mt-12 pt-8 border-t border-neutral-200", children: _jsxs("div", { className: "flex flex-wrap gap-4", children: [_jsx("button", { onClick: () => setSelectedNews(null), className: "px-6 py-3 bg-accent-500 text-white rounded-lg font-semibold hover:bg-accent-600 transition-colors", children: "Retour aux actualit\u00E9s" }), _jsxs("button", { className: "px-6 py-3 bg-neutral-100 text-neutral-700 rounded-lg font-semibold hover:bg-neutral-200 transition-colors flex items-center gap-2", children: [_jsx(Share2, { className: "w-4 h-4" }), "Partager cet article"] })] }) })] })] }) }) }))] }));
+};
+export default Actualites;
+//# sourceMappingURL=Actualites.js.map
